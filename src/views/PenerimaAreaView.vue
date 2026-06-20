@@ -133,7 +133,6 @@
     <div v-if="activeModalKupon" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4" @click.self="closeQrModal">
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl animate-in fade-in zoom-in-95 duration-150">
         <div class="flex justify-between items-center mb-4">
-          <span class="text-xs font-mono text-slate-500">Isi QR: {{ activeModalKupon.Kupon_ID }}</span>
           <button @click="closeQrModal" class="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -142,6 +141,7 @@
         </div>
 
         <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Nominal Klaim Kupon</h4>
+        
         <div class="text-2xl font-black font-mono text-emerald-400 mb-5">
           Rp {{ Number(activeModalKupon.Nominal).toLocaleString('id-ID') }}
         </div>
