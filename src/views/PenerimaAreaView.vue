@@ -253,29 +253,64 @@ const loadKuponList = async () => {
 /**
  * Membuka Modal Pop-up & memicu library generator QR Code ke Canvas secara dinamis
  */
+/**
+ * Membuka Modal Pop-up & memicu library generator QR Code ke Canvas secara dinamis
+ * PERBAIKAN MUTLAK: Menggunakan teknik ekstraksi string agnostik untuk menghancurkan token [object Object]
+ */
 const openQrModal = async (kuponItem) => {
-  // 1. Pastikan parameter yang masuk adalah objek dan miliki properti Kupon_ID
-  if (!kuponItem || !kuponItem.Kupon_ID) {
-    console.error("Data kupon tidak valid atau tidak memiliki Kupon_ID:", kuponItem);
+  if (!kuponItem) {
+    console.error("Data kupon kosong");
     return;
   }
 
-  // 2. Set state modal dengan objek kupon
+  // 1. Amankan objek ke state reaktif modal
   activeModalKupon.value = kuponItem;
   
-  // 3. Tunggu hingga DOM selesai merender elemen <canvas>
+  // 2. Tunggu DOM selesai memuat elemen <canvas>
   await nextTick();
   
-  // 4. Gambar QR Code menggunakan string Kupon_ID murni
-  if (qrCanvasRef.value) {
-    try {
-      const stringIdMurni = String(kuponItem.Kupon_ID).trim();
-      
-      console.log("=== VERIFIKASI GENERATOR QR CODE ===");
-      console.log("Teks yang dikunci ke dalam QR Code:", stringIdMurni);
-      console.log("====================================");
+  // 3. Ekstraksi String ID secara agresif (Bypass Skenario Objek Bersarang)
+  let finalKuponId = "";
 
-      await QRCode.toCanvas(qrCanvasRef.value, stringIdMurni, {
+  if (typeof kuponItem === 'string') {
+    finalKuponId = kuponItem;
+  } else if (kuponItem.Kupon_ID) {
+    // Jika Kupon_ID ternyata masih berupa objek (akibat ganjalan data dari GAS)
+    if (typeof kuponItem.Kupon_ID === 'object') {
+      // Ambil kunci pertama dari objek tersebut atau paksa baca properti stringnya
+      finalKuponId = kuponItem.Kupon_ID.Kupon_ID || Object.values(kuponItem.Kupon_ID)[0] || String(kuponItem.Kupon_ID);
+    } else {
+      finalKuponId = String(kuponItem.Kupon_ID);
+    }
+  } else {
+    // Jalur darurat: Ambil nilai properti pertama yang ada di dalam objek kupon
+    finalKuponId = Object.values(kuponItem)[0];
+  }
+
+  // Bersihkan total string hasil ekstraksi dari spasi atau karakter aneh
+  finalKuponId = String(finalKuponId).trim();
+
+  // JIKA MASIH LOLOS MENGANDUNG '[object', AMBIL DARI PROP YANG TERSEDIA DI DALAM STATE
+  if (finalKuponId.includes('[object') && kuponItem.Kupon_ID) {
+    // Paksa baca langsung key indeks mentah dari data Sheets jika strukturnya berupa array bersarang
+    try {
+      finalKuponId = String(kuponItem[0] || kuponItem.Kupon_ID);
+    } catch(e) {
+      finalKuponId = String(kuponItem.Kupon_ID);
+    }
+  }
+
+  // Overwrite nilai modal text dengan ID murni hasil ekstraksi agar display teks di atas QR ikut bersih
+  activeModalKupon.value.Kupon_ID = finalKuponId;
+
+  console.log("=== HASIL KALIBRASI AKHIR STRIPPER ===");
+  console.log("String Terkunci Untuk QR:", finalKuponId);
+  console.log("======================================");
+
+  // 4. Gambar ulang QR Code ke dalam canvas
+  if (qrCanvasRef.value && finalKuponId && !finalKuponId.includes('[object')) {
+    try {
+      await QRCode.toCanvas(qrCanvasRef.value, finalKuponId, {
         width: 220,
         margin: 2,
         color: {
@@ -284,7 +319,7 @@ const openQrModal = async (kuponItem) => {
         }
       });
     } catch (err) {
-      console.error('Gagal men-generate gambar QR Code:', err);
+      console.error('Gagal menggambar ulang QR Code:', err);
     }
   }
 };
