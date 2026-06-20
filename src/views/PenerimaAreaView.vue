@@ -254,14 +254,30 @@ const loadKuponList = async () => {
  * Membuka Modal Pop-up & memicu library generator QR Code ke Canvas secara dinamis
  */
 const openQrModal = async (kuponItem) => {
+  // 1. Pastikan parameter yang masuk adalah objek dan miliki properti Kupon_ID
+  if (!kuponItem || !kuponItem.Kupon_ID) {
+    console.error("Data kupon tidak valid atau tidak memiliki Kupon_ID:", kuponItem);
+    return;
+  }
+
+  // 2. Set state modal dengan objek kupon
   activeModalKupon.value = kuponItem;
+  
+  // 3. Tunggu hingga DOM selesai merender elemen <canvas>
   await nextTick();
   
+  // 4. Gambar QR Code menggunakan string Kupon_ID murni
   if (qrCanvasRef.value) {
     try {
-      await QRCode.toCanvas(qrCanvasRef.value, kuponItem.Kupon_ID, {
-        width: 200,
-        margin: 1,
+      const stringIdMurni = String(kuponItem.Kupon_ID).trim();
+      
+      console.log("=== VERIFIKASI GENERATOR QR CODE ===");
+      console.log("Teks yang dikunci ke dalam QR Code:", stringIdMurni);
+      console.log("====================================");
+
+      await QRCode.toCanvas(qrCanvasRef.value, stringIdMurni, {
+        width: 220,
+        margin: 2,
         color: {
           dark: '#020617',
           light: '#FFFFFF'
