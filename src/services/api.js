@@ -54,6 +54,9 @@ const apiService = {
     return this._request('get_penerima_kupon', { eventId, nrp });
   },
 
+  claimKupon(kuponId) {
+    return this._request('claim_kupon', { kuponId });
+  },
   /**
    * Kirim transaksi kupon baru ke Google Sheets
    */
