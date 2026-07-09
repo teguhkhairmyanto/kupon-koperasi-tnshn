@@ -57,11 +57,15 @@ const apiService = {
   claimKupon(kuponId) {
     return this._request('claim_kupon', { kuponId });
   },
+
+  checkAndSetPin(payload) {
+    return this._request('check_and_set_pin', payload);
+  },
   /**
    * Kirim transaksi kupon baru ke Google Sheets
    */
-  submitKupon(eventId, nrpPemberi, nrpPenerima, nominal) {
-    return this._request('submit_kupon', { eventId, nrpPemberi, nrpPenerima, nominal });
+  submitKupon(eventId, nrpPemberi, nrpPenerima, nominal, notes, pin) {
+    return this._request('submit_kupon', { eventId, nrpPemberi, nrpPenerima, nominal, notes, pin });
   }
 };
 
